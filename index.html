@@ -1,7 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiszki</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .flashcard {
+            border: 1px solid black;
+            margin-bottom: 20px;
+            padding: 10px;
+            page-break-inside: avoid;
+        }
+        .flashcard p {
+            margin: 5px 0;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+    <h1>Tworzenie Fiszek</h1>
+    <label for="title">Tytuł:</label>
+    <input type="text" id="title" required />
+
+    <label for="quote">Cytat:</label>
+    <input type="text" id="quote" required />
+
+    <label for="epic">Epos:</label>
+    <select id="epic">
+        <option value="Odyseja">Odyseja</option>
+        <option value="Iliada">Iliada</option>
+    </select>
+
+    <label for="world">Świat:</label>
+    <select id="world">
+        <option value="świat greków">świat greków</option>
+        <option value="świat nie-greków">świat nie-greków</option>
+    </select>
+
+    <label for="notes">Uwagi:</label>
+    <input type="text" id="notes" />
+
+    <button id="addQuote">Wprowadź cytat</button>
+    <button id="compile">Kompiluj fiszki</button>
+    <input type="file" id="fileInput" accept=".html" />
+    <button id="import">Importuj fiszki</button>
+
+    <table id="flashcardTable">
+        <thead>
+            <tr>
+                <th>Lp.</th>
+                <th>Tytuł</th>
+                <th>Cytat</th>
+                <th>Epos</th>
+                <th>Świat</th>
+                <th>Uwagi</th>
+                <th>Akcja</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Tutaj będą dodawane fiszki -->
+        </tbody>
+    </table>
+
+    <script>
+        const flashcards = [];
+        let editingIndex = -1;
+
+        document.getElementById('addQuote').addEventListener('click', () => {
+            const title = document.getElementById('title').value.trim();
+            const quote = document.getElementById('quote').value.trim();
+            const epic = document.getElementById('epic').value;
+            const world = document.getElementById('world').value;
+            const notes = document.getElementById('notes').value.trim();
+
+            if (quote === '' || title === '') {
+                alert('Cytat i tytuł nie mogą być puste!');
+                return;
+            }
+
+            if (editingIndex === -1) {
+                const index = flashcards.length + 1;
+                flashcards.push({ title, quote, epic, world, notes });
+                alert('Cytat dodany!');
+            } else {
+                flashcards[editingIndex] = { title, quote, epic, world, notes };
+                editingIndex = -1;
+                alert('Cytat zaktualizowany!');
+            }
+
+            document.getElementById('title').value = '';
+            document.getElementById('quote').value = '';
+            document.getElementById('notes').value = '';
+
+            updateTable();
+        });
+
+        document.querySelector('#flashcardTable tbody').addEventListener('click', (event) => {
+            if (event.target.classList.contains('deleteQuote')) {
+                const index = event.target.getAttribute('data-index');
+                flashcards.splice(index, 1);
+                updateTable();
+            } else if (event.target.classList.contains('editQuote')) {
+                const index = event.target.getAttribute('data-index');
+                const card = flashcards[index];
+                document.getElementById('title').value = card.title;
+                document.getElementById('quote').value = card.quote;
+                document.getElementById('epic').value = card.epic;
+                document.getElementById('world').value = card.world;
+                document.getElementById('notes').value = card.notes;
+                editingIndex = index;
+            }
+        });
+
+        function updateTable() {
+            const tableBody = document.querySelector('#flashcardTable tbody');
+            tableBody.innerHTML = '';
+            flashcards.forEach((card, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${index + 1}</td><td>${card.title}</td><td>${card.quote}</td><td>${card.epic}</td><td>${card.world}</td><td>${card.notes}</td><td><button class="editQuote" data-index="${index}">Edytuj</button> <button class="deleteQuote" data-index="${index}">Usuń</button></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.getElementById('compile').addEventListener('click', () => {
+            let htmlContent = '<html><head><meta charset="UTF-8"><title>Fiszki</title><style>body{font-family: Arial, sans-serif;} .flashcard{border: 1px solid black; margin-bottom: 20px; padding: 10px; page-break-inside: avoid;} .flashcard p{margin: 5px 0; word-wrap: break-word;}</style></head><body>';
+            htmlContent += '<h1>Fiszki</h1>';
+
+            flashcards.forEach((card, index) => {
+                htmlContent += `<div class="flashcard">`;
+                htmlContent += `<p><strong>Lp.:</strong> ${index + 1} <strong>Tytuł:</strong> ${card.title}</p>`;
+                htmlContent += `<p><strong>Cytat:</strong> ${card.quote}</p>`;
+                htmlContent += `<p><strong>Epos:</strong> ${card.epic}</p>`;
+                htmlContent += `<p><strong>Świat:</strong> ${card.world}</p>`;
+                htmlContent += `<p><strong>Uwagi:</strong> ${card.notes || ''}</p>`;
+                htmlContent += `</div>`;
+            });
+
+            htmlContent += '</body></html>';
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Fiszki.html';
+            link.click();
+        });
+
+        document.getElementById('import').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Proszę wybrać plik do zaimportowania.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(event.target.result, 'text/html');
+                const importedFlashcards = Array.from(doc.querySelectorAll('.flashcard')).map(card => {
+                    const title = card.querySelector('p:nth-child(1)').innerText.replace(/.*Tytuł: /, '').trim();
+                    const quote = card.querySelector('p:nth-child(2)').innerText.replace('Cytat: ', '');
+                    const epic = card.querySelector('p:nth-child(3)').innerText.replace('Epos: ', '');
+                    const world = card.querySelector('p:nth-child(4)').innerText.replace('Świat: ', '');
+                    const notes = card.querySelector('p:nth-child(5)').innerText.replace('Uwagi: ', '');
+                    return { title, quote, epic, world, notes };
+                });
+
+                flashcards.push(...importedFlashcards);
+                updateTable();
+                alert('Fiszki zaimportowane pomyślnie!');
+            };
+            reader.readAsText(file);
+        });
+    </script>
 </body>
 </html>
