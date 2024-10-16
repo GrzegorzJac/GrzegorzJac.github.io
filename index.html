@@ -57,8 +57,8 @@
 
     <label for="world">Świat:</label>
     <select id="world">
-        <option value="świat greków">świat greków</option>
-        <option value="świat nie-greków">świat nie-greków</option>
+        <option value="Świat greków">świat greków</option>
+        <option value="Świat nie-greków">świat nie-greków</option>
     </select>
 
     <label for="notes">Uwagi:</label>
@@ -72,7 +72,7 @@
     <table id="flashcardTable">
         <thead>
             <tr>
-                <th>Lp.</th>
+                <th>Nr</th>
                 <th>Tytuł</th>
                 <th>Cytat</th>
                 <th>Epos</th>
@@ -152,7 +152,7 @@
 
             flashcards.forEach((card, index) => {
                 htmlContent += `<div class="flashcard">`;
-                htmlContent += `<p><strong>Lp.:</strong> ${index + 1} <strong>Tytuł:</strong> ${card.title}</p>`;
+                htmlContent += `<p><strong>Nr:</strong> ${index + 1} <strong>Tytuł:</strong> ${card.title}</p>`;
                 htmlContent += `<p><strong>Cytat:</strong> ${card.quote}</p>`;
                 htmlContent += `<p><strong>Epos:</strong> ${card.epic}</p>`;
                 htmlContent += `<p><strong>Świat:</strong> ${card.world}</p>`;
